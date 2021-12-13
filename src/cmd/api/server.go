@@ -3,7 +3,7 @@ package api
 import (
 	comfig2 "GoMvc/src/config"
 	"GoMvc/src/database"
-	"fmt"
+	"GoMvc/src/database/grom"
 	"github.com/spf13/cobra"
 	"log"
 )
@@ -36,7 +36,7 @@ var (
  */
 func init() {
 	//todo : 路径有问题  稍后修复
-	StartCmd.PersistentFlags().StringVarP(&config, "config", "c", "/config/setting.yml", "Start server with provided configuration file")
+	StartCmd.PersistentFlags().StringVarP(&config, "config", "c", "/Users/kiki/workspace/go/GoMvc/src/config/setting.yml", "Start server with provided configuration file")
 	//StartCmd.PersistentFlags().StringVarP(&port, "port", "p", "8002", "Tcp port server listening on")
 	//StartCmd.PersistentFlags().StringVarP(&mode, "mode", "m", "dev", "server mode ; eg:dev,test,prod")
 }
@@ -51,5 +51,14 @@ func Setup() {
 	comfig2.ConfigSetup(config)
 	// 2. 初始化数据库链接
 	database.Setup()
-	fmt.Println("init success")
+	//3. 数据库迁移
+	_ = migrateModel()
+}
+
+func migrateModel() error {
+	//如果当前是mysql  执行数据迁移  主要目的是用来创建表、缺失的外键、约束、列和索引
+	if comfig2.DatabaseConfig.Dbtype == "mysql" {
+		database.Eloquent = database.Eloquent.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4")
+	}
+	return grom.AutoMigrate(database.Eloquent)
 }

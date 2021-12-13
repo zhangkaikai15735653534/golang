@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"GoMvc/src/database/system"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +21,6 @@ func GenerateCaptchaHandler(c *gin.Context) {
 func Login(c *gin.Context) {
 	//定义变量接收返回值
 	var (
-		res bool
 		err error
 	)
 	fmt.Println("login  begin")
@@ -28,16 +28,23 @@ func Login(c *gin.Context) {
 	pwd := c.PostForm("password")
 	fmt.Println(name)
 	fmt.Println(pwd)
-	res, err = checkUser(name, pwd)
-	if res {
+
+	customer := system.SysCustomer{}
+	customer.UserName.Username = name
+	customer.CustomerPassword = pwd
+	userInfo, err := customer.GetUserInfo()
+	//res, err = checkUser(name, pwd)
+	fmt.Println(userInfo)
+	fmt.Println(err)
+	if err == nil {
 		fmt.Println("校验通过 ，开始执行下一步操作")
 		//todo:查询数据库获取用户信息
-		var userId int64 = 100
-		var userName string = "kiki"
+		var userId int = userInfo.CustomerId
+		var userName string = userInfo.Username
 		//生成jwt 并返回
 		c.JSON(200, gin.H{
 			"message": "ok",
-			"token":   GetJwt(userId, userName),
+			"token":   GetJwt(int64(userId), userName),
 		})
 
 	} else {

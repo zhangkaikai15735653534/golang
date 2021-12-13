@@ -34,15 +34,13 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	api.Usage() //项目启动
+	api.Usage() //项目启动打印日志
 	api.Setup() //加载配置项
-
 	//todo: 先放弃这种方式  实在是不会写  学会了再来
 	//rootCmd.AddCommand(api.StartCmd)
 	//注册系统路由
 	r := router.InitRouter()
-	//
-	//监听端口号
+	//定义端口号
 	r.Run(":9999")
 
 }
